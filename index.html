@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>skii · 争论终结者</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">skii</span>
+      <span class="tagline">争论终结者 · 以战止战</span>
+    </div>
+    <div class="top-actions">
+      <button id="btnSettings" class="icon-btn" title="LLM 设置">⚙</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel input-panel">
+      <div class="panel-head">
+        <h2>对方论据</h2>
+        <div class="row">
+          <button id="btnExample" class="ghost-btn">示例</button>
+          <button id="btnClear" class="ghost-btn">清空</button>
+        </div>
+      </div>
+      <textarea id="input" spellcheck="false" placeholder="把对方的原话粘进来。可以是一段，也可以是多段。"></textarea>
+      <div class="row controls">
+        <label class="mode">
+          <span>模式</span>
+          <select id="mode">
+            <option value="analytical">理性拆解</option>
+            <option value="scorn">高姿态蔑视</option>
+            <option value="marathon">无限马拉松</option>
+          </select>
+        </label>
+        <button id="btnAnalyze" class="primary-btn">拆解并开火</button>
+      </div>
+      <div class="engine-row">
+        <span id="engineBadge" class="badge">离线引擎</span>
+        <span id="roundBadge" class="badge ghost hidden">第 1 轮</span>
+      </div>
+    </section>
+
+    <section class="panel result-panel">
+      <nav class="tabs">
+        <button data-tab="structure" class="active">结构化</button>
+        <button data-tab="reconstruct">反重构</button>
+        <button data-tab="counter">反论弹药</button>
+        <button data-tab="reply">高姿态回复</button>
+        <button data-tab="followups">追问链</button>
+      </nav>
+      <div class="tab-body">
+        <div id="tab-structure" class="tab active"><p class="placeholder">输入一段论据，点「拆解并开火」。</p></div>
+        <div id="tab-reconstruct" class="tab"></div>
+        <div id="tab-counter" class="tab"></div>
+        <div id="tab-reply" class="tab"></div>
+        <div id="tab-followups" class="tab"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-box">
+      <h2>LLM 引擎设置</h2>
+      <p class="muted">任意 OpenAI 兼容接口。留空则使用内置离线规则引擎。密钥只保存在本机浏览器，不会上传。</p>
+      <label>Base URL
+        <input id="cfgBase" placeholder="https://api.deepseek.com/v1">
+      </label>
+      <label>API Key
+        <input id="cfgKey" type="password" placeholder="sk-...">
+      </label>
+      <label>Model
+        <input id="cfgModel" placeholder="deepseek-chat">
+      </label>
+      <div class="row end">
+        <button id="cfgClose" class="ghost-btn">取消</button>
+        <button id="cfgSave" class="primary-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>

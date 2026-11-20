@@ -1,33 +1,70 @@
-# skii
+# skii · 争论终结者
 
-> 一句话描述你的项目（占位，待补充）。
+> 以战止战。把每一场网络争论还原成骨架、反重构、再追问——直到对方发现自己在打一场体力仗。
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+## 这是什么
 
-## 简介
+输入一段对方论据（比如「拼多多提现到底是不是真的」这类烂账），skii 自动完成：
 
-（待补充：这个项目解决什么问题、有什么特色。）
+1. **拆骨架** — 剥离修辞，提取 结论 / 前提 / 隐含假设 / 逻辑漏洞
+2. **反重构** — 用几行字重写他的全部推理：「P1 + P2 ⇒ C」，其余 90% 是修辞
+3. **出弹药** — 对每条前提给出反驳角度与举证要求
+4. **连环追问** — 生成追问队列，进入无限马拉松模式
+5. **高姿态回复** — 一键生成三种风格的可复制回复
+
+两种引擎：**离线规则引擎**（开箱即用，无需 API Key）和 **LLM 引擎**（任意 OpenAI 兼容接口）。
 
 ## 快速开始
 
-```bash
-git clone <你的仓库地址>
-cd skii
-```
+零构建、零依赖，直接打开即可用：
+
+    # 方式一：浏览器直接打开
+    index.html
+
+    # 方式二：本地起服务（推荐）
+    python -m http.server 8000
+    # 然后打开 http://localhost:8000
+
+## 配置 LLM 引擎
+
+右上角 ⚙ → 填写 Base URL / API Key / Model，例如：
+
+| 字段 | 示例 |
+|---|---|
+| Base URL | https://api.deepseek.com/v1 |
+| API Key | sk-... |
+| Model | deepseek-chat |
+
+配置只保存在浏览器 localStorage，不会上传到任何服务器。未配置时自动使用离线引擎。
+
+## 三种模式
+
+| 模式 | 说明 |
+|---|---|
+| 理性拆解 | 只讲逻辑，不带情绪 |
+| 高姿态蔑视 | 居高临下，只嘲讽论据不攻击人 |
+| 无限马拉松 | 连环追问，把讨论拖成体力赛 |
 
 ## 目录结构
 
-```
-skii/
-├── README.md
-├── LICENSE
-└── .gitignore
-```
+    skii/
+    ├── index.html      # 单页应用
+    ├── styles.css      # 样式
+    ├── app.js          # 引擎：离线规则 + LLM 接口
+    ├── README.md
+    ├── LICENSE         # MIT
+    └── .gitignore
 
-## 贡献
+## 部署到 GitHub Pages
 
-欢迎提交 Issue 和 Pull Request。
+1. Push 到 GitHub 仓库
+2. Settings → Pages → Source: Deploy from a branch → main / root
+3. 访问 https://<用户名>.github.io/<仓库名>/
+
+## 声明
+
+本项目用于逻辑分析与辩论演练。请勿用于骚扰、人身攻击或传播不实信息。嘲讽对事不对人。
 
 ## 许可证
 
-本项目基于 [MIT License](LICENSE) 开源。
+MIT
