@@ -19,6 +19,7 @@
     round: 0,
     history: [],
     last: null,
+    lastText: '',
     engine: '离线引擎'
   };
 
@@ -237,6 +238,78 @@
     return result;
   }
 
+  /* ---------- 黑图反击 ---------- */
+
+  var BLACK_QUAL = /(缺你了|关你什么事|关你屁事|跟你有|有你什么事|你是谁|你算老几|轮得到你|你配|也配|什么身份|哪根葱)/;
+  var BLACK_PROV = /(不服.*咬|咬我|来啊|急了|破防|笑死|哈哈哈|怕了|急眼|跳脚)/;
+
+  function analyzeBlackImage(text, round) {
+    var t = String(text || '').trim();
+    var hasQual = BLACK_QUAL.test(t);
+    var hasProv = BLACK_PROV.test(t);
+    var n = round && round > 0 ? round : 1;
+
+    var verdict = '这段内容没有一句在回应争议本身。它不是证据，是对方在这一轮交白卷。';
+    var pin = '他回避的是这个问题：他反对我方什么？依据是什么？答不上，那就把图当成他全部的回答记录。';
+    var lines = [
+      '图我收了。论点呢？',
+      '每收一张图，记一次：第 ' + n + ' 次拒答。',
+      '我不需要这张图证明什么，对方需要它——因为除了它他没有别的。'
+    ];
+    var timeline = '时间线：① 我方提出质疑 → ② 对方答非所问 → ③ 我方追问 → ④ 对方做图。谁在谈事、谁在做图，记录都在。';
+
+    if (hasQual && hasProv) {
+      verdict = '对方把「缺你了」做成梗图，再配一句「不服咬我呀」——这两句合在一起，不是在回应论点，是在问「你配不配说话」。';
+      pin = '先回这一问：论资格，先插嘴的是他，先转移话题的是他，先做图的是他；论观点，他到这一轮为止一句立场都没说过。';
+      lines = [
+        '图我收了，论点呢？',
+        '「缺你了」翻译成白话：这跟你有关系吗？',
+        '「不服咬我呀」翻译成白话：我答不上来。',
+        '论资格：先插嘴的是你，先转移话题的是你，先做图的是你。',
+        '第 ' + n + ' 次拒答，已记录。'
+      ];
+    } else if (hasProv) {
+      verdict = '「不服咬我呀」翻译过来只有一句：我答不上来。这是他自己的话，不是我们编的。';
+      pin = '那我们把「不服」的部分留下：他反对什么？依据是什么？答不上，图就先替他存着，标题叫《论据缺考》。';
+      lines = [
+        '你可以一直发图，我每收一张记一次：第 ' + n + ' 次拒答。',
+        '「不服咬我呀」翻译一下：我答不上来。',
+        '急的是做图的人，不是提问的人。'
+      ];
+    } else if (hasQual) {
+      verdict = '「缺你了」翻译成白话：这跟你有关系吗？对方的回答是一张图——等于承认没关系，也等于承认先插嘴的是他。';
+      pin = '他可以说有关系、然后拿依据；也可以承认没关系。他两条路都没走，选了做图。做图不算回答。';
+      lines = [
+        '「缺你了」翻译成白话：这跟你有关系吗？',
+        '我方问的是关系，你答的是图。这叫答非所问。',
+        '第 ' + n + ' 次拒答，已记录。'
+      ];
+    }
+
+    return {
+      verdict: verdict,
+      pin: pin,
+      count: '记录：这是对方第 ' + n + ' 次用图代替回答。继续发，我每次都记。',
+      lines: lines,
+      timeline: timeline
+    };
+  }
+
+  function buildBlackHtml(res) {
+    var b = res.black;
+    if (!b) {
+      return '<p class="placeholder">切到「黑图反击」模式，把对方梗图/黑图里的文字贴进来，点「拆解并开火」。</p>';
+    }
+    var h = ['<p class="tip">第一发三段全发：定性 → 钉题 → 计数。之后他再发图，只回计数句。</p><div class="cards">'];
+    h.push('<div class="card"><div class="card-head"><h3>① 定性</h3><button class="mini js-copy" data-copy="black:verdict">复制</button></div><p class="reply-block">' + esc(b.verdict) + '</p></div>');
+    h.push('<div class="card"><div class="card-head"><h3>② 钉题</h3><button class="mini js-copy" data-copy="black:pin">复制</button></div><p class="reply-block">' + esc(b.pin) + '</p></div>');
+    h.push('<div class="card"><div class="card-head"><h3>③ 计数</h3><button class="mini js-copy" data-copy="black:count">复制</button></div><p class="reply-block">' + esc(b.count) + '</p></div>');
+    h.push('<div class="card"><div class="card-head"><h3>短句弹药</h3><button class="mini js-copy" data-copy="black:all">复制整套</button></div><ul class="black-lines">' + b.lines.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>');
+    h.push('<div class="card"><div class="card-head"><h3>给围观者的时间线</h3><button class="mini js-copy" data-copy="black:timeline">复制</button></div><p class="reply-block">' + esc(b.timeline) + '</p></div>');
+    h.push('</div>');
+    return h.join('');
+  }
+
   /* ---------- LLM 引擎 ---------- */
 
   var SYSTEM_PROMPT = [
@@ -299,6 +372,16 @@
       lines.push('C：' + result.claims[0]);
       result.skeleton = lines.join('\n');
     }
+    if (data.black && typeof data.black === 'object') {
+      var bl = data.black;
+      result.black = {
+        verdict: String(bl.verdict || ''),
+        pin: String(bl.pin || ''),
+        count: String(bl.count || ''),
+        lines: Array.isArray(bl.lines) ? bl.lines.map(String) : [],
+        timeline: String(bl.timeline || '')
+      };
+    }
     if (!result.compress) result.compress = '压缩后：结论需要前提支撑，前提需要证据支撑——对方两者都没有。';
     return result;
   }
@@ -308,12 +391,16 @@
     var base = String(llm.baseUrl || '').replace(/\/+$/, '');
     if (!base || !llm.apiKey) return Promise.reject(new Error('未配置 LLM'));
     var url = base + '/chat/completions';
-    var modeName = { analytical: '理性拆解', scorn: '高姿态蔑视', marathon: '无限马拉松' }[state.mode] || '理性拆解';
+    var modeName = { analytical: '理性拆解', scorn: '高姿态蔑视', marathon: '无限马拉松', blackimage: '黑图反击' }[state.mode] || '理性拆解';
+    var sys = SYSTEM_PROMPT;
+    if (state.mode === 'blackimage') {
+      sys += '\n\n黑图反击模式：如果输入是对方用来嘲讽的梗图文字（表情包文案、挑衅短句、反问），额外输出 black 字段：{"verdict":"定性句","pin":"钉题句","count":"计数句","lines":["短句弹药"],"timeline":"给围观者的时间线"}。语气：冷静、精准、居高临下，只针对论据与回避行为。';
+    }
     var body = {
       model: llm.model || 'deepseek-chat',
       temperature: 0.85,
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: sys },
         { role: 'user', content: '当前模式：' + modeName + '\n\n对方论据：\n' + text }
       ]
     };
@@ -341,6 +428,9 @@
   function render(res, engineLabel) {
     state.last = res;
     state.engine = engineLabel;
+    if (state.mode === 'blackimage' && !res.black) {
+      res.black = analyzeBlackImage(state.lastText || '', state.round);
+    }
     var badge = $('#engineBadge');
     if (badge) {
       badge.textContent = engineLabel;
@@ -411,6 +501,8 @@
     }
     $('#tab-followups').innerHTML = f.join('');
 
+    $('#tab-blackimage').innerHTML = buildBlackHtml(res);
+
     bindCopy(res);
     bindNext();
   }
@@ -426,6 +518,13 @@
           text = x ? x.target + '：' + x.strategy : '';
         } else if (parts[0] === 'reply') {
           text = res.replies[parts[1]] || '';
+        } else if (parts[0] === 'black' && res.black) {
+          var b = res.black;
+          if (parts[1] === 'all') {
+            text = [b.verdict, b.pin, b.count].join('\n\n') + '\n\n' + (b.lines || []).join('\n') + '\n\n' + b.timeline;
+          } else {
+            text = b[parts[1]] || '';
+          }
         }
         copyText(text);
       };
@@ -450,7 +549,7 @@
   function analyzeFromInput() {
     var text = (($('#input') || {}).value || '').trim();
     if (!text) { toast('先输入对方的论据'); return; }
-    state.round = 1;
+    state.round = state.mode === 'blackimage' ? state.round + 1 : 1;
     state.history = [];
     runAnalysis(text);
   }
@@ -466,10 +565,11 @@
     }
 
     function finish(res, engine) {
+      state.lastText = text;
       render(res, engine);
       btn.disabled = false;
       btn.textContent = '拆解并开火';
-      switchTab(state.mode === 'marathon' ? 'followups' : state.mode === 'scorn' ? 'reply' : 'structure');
+      switchTab(state.mode === 'blackimage' ? 'blackimage' : state.mode === 'marathon' ? 'followups' : state.mode === 'scorn' ? 'reply' : 'structure');
     }
 
     function offline(reason) {
@@ -573,7 +673,7 @@
   }
 
   if (typeof window !== 'undefined') {
-    window.skii = { analyze: analyzeOffline };
+    window.skii = { analyze: analyzeOffline, analyzeBlack: analyzeBlackImage };
   }
 
   if (typeof document !== 'undefined') {

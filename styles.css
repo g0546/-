@@ -218,3 +218,8 @@ ul.history li { display: flex; gap: 10px; align-items: baseline; padding: 4px 0;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
 .hidden { display: none !important; }
+
+.reply-block { margin: 0 0 6px; font-size: 14.5px; line-height: 1.75; }
+.black-lines { margin: 0 0 8px; padding-left: 20px; }
+.black-lines li { margin: 4px 0; }
+.card-head .mini { margin-left: 8px; }
