@@ -61,15 +61,31 @@
     ├── index.html      # 单页应用
     ├── styles.css      # 样式
     ├── app.js          # 引擎：离线规则 + 黑图反击 + LLM 接口
+    ├── favicon.svg     # 站点图标
+    ├── .github/workflows/pages.yml  # Pages 自动部署
     ├── README.md
     ├── LICENSE         # MIT
     └── .gitignore
 
-## 部署到 GitHub Pages
+## 上线（GitHub Pages）
 
-1. Push 到 GitHub 仓库
-2. Settings → Pages → Source: Deploy from a branch → main / root
-3. 访问 https://<用户名>.github.io/<仓库名>/
+推荐用仓库里配好的 GitHub Actions：push 到 `main` 后自动部署。
+
+1. 在 GitHub 新建空仓库，例如 `skii`（不要初始化 README）
+2. 本地：
+
+       git remote add origin https://github.com/<用户名>/skii.git
+       git push -u origin main
+
+3. 打开仓库 → Settings → Pages → Source 选 **GitHub Actions**
+4. 等 Actions 跑完（约 1 分钟），访问 https://<用户名>.github.io/skii/
+
+不想用 Actions 也可以用分支部署：Settings → Pages → Source 选 **Deploy from a branch** → `main` / `/ (root)`（仓库已带 `.nojekyll`，无需额外配置）。
+
+## 仓库设置建议
+
+- Description：`把对方论据拆成骨架的争论终结器 · 以战止战`
+- Topics：`debate` `argument-analysis` `ai-tools` `github-pages` `javascript`
 
 ## 声明
 
